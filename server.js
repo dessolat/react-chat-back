@@ -1,5 +1,6 @@
 const app = require('express')();
 const server = require('http').createServer(app);
+const router = require('./router/Router')
 const io = require('socket.io')(server, {
   cors: {
     methods: ['GET', 'POST']
@@ -7,6 +8,7 @@ const io = require('socket.io')(server, {
 });
 const PORT = process.env.PORT || 5000;
 
+app.use('/', router);
 
 io.on('connection', socket => {
   console.log('Client connected');
