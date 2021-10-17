@@ -7,6 +7,7 @@ const io = require('socket.io')(server, {
   }
 });
 const PORT = process.env.PORT || 5000;
+const { addUser, getChannelUsers, removeUser } = require('./handleUsers');
 
 app.use('/', router);
 
@@ -14,11 +15,18 @@ io.on('connection', socket => {
   console.log('Client connected');
 
   socket.on('disconnect', () => {
-    console.log('Client disconnected');
+		removeUser(socket.name)
+		io.to(socket.channel).emit('user-left', socket.name)
+    console.log(`${socket.name} disconnected`);
   });
 
-  socket.on('join', user => {
+  socket.on('join', (user, getUsers) => {
+    socket.name = user.name;
+		socket.channel = user.channel;
     socket.join(user.channel);
+    addUser(user);
+    getUsers(getChannelUsers(user.channel));
+		socket.to(socket.channel).emit('user-join', user)
   });
 
   socket.on('send-message', (user, message) => {
